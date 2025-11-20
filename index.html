@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happy Birthday</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#c45b8f;--card:#c7b7c0;--muted:#6b7788;--accent:#ff7fb2;--accent2:#ffd7ea}
+    *{box-sizing:border-box}
+    /* Mobile-first: make the site optimized for phones */
+    body{margin:0;font-family:Montserrat,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(135deg,var(--bg),#f7fcff);color:#102027;padding:14px;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .wrap{width:100%;max-width:420px;margin:0 auto;background:var(--card);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(16,32,39,0.06);position:relative}
+    header{display:flex;align-items:center;gap:12px}
+    h1{font-family:'Great Vibes',cursive;color:var(--accent);font-size:40px;margin:0}
+    p.subtitle{margin:6px 0;color:var(--muted);font-size:14px}
+
+    /* Layout: single column by default (phone). On larger screens allow two columns */
+    .main{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media (min-width:880px){.main{grid-template-columns:1fr 360px}}
+
+    .card{background:linear-gradient(180deg,#ffffff, #fffafc);padding:14px;border-radius:10px}
+    /* Use aspect-ratio to keep images crisp on phones */
+    .photo{aspect-ratio:16/9;border-radius:10px;overflow:hidden;border:1px solid rgba(16,32,39,0.04);display:block;background:linear-gradient(180deg,#fff6f9,#fffdfd)}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .info{display:flex;flex-direction:column;gap:10px}
+    .lines{background:transparent;padding:8px;border-radius:8px}
+    .lines h3{margin:0;color:#1f2a37;font-size:16px}
+    .wish{font-size:16px;color:#213244;margin-top:6px;line-height:1.4}
+    .from{margin-top:10px;color:var(--muted);font-weight:600}
+
+    .controls{display:flex;flex-direction:column;gap:10px}
+    label.upload{display:block;padding:10px;border-radius:10px;text-align:center;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#102027;font-weight:700;cursor:pointer}
+    input[type=file]{display:none}
+
+    #confettiHolder{position:absolute;inset:0;pointer-events:none;border-radius:14px;overflow:hidden}
+    #confettiCanvas{width:100%;height:100%;display:block}
+
+    .celebrateBtn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,#ffd4e8,#ff9ecb);border:none;color:#102027;font-weight:700;cursor:pointer}
+
+    audio{width:100%;outline:none}
+
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Confetti holder (canvas will be injected here) -->
+    <div id="confettiHolder" aria-hidden="true"></div>
+
+    <header>
+      <div>
+        <h1 contenteditable id="title">Happy Birthday!</h1>
+        <p class="subtitle" contenteditable id="subtitle">Wishing you a wonderful day filled with joy.</p>
+      </div>
+    </header>
+
+    <div class="main">
+      <div class="card">
+        <div class="photo" id="photoBox">
+          <!--
+            Replace the image src below with your image URL.
+            Example: set `const IMAGE_SRC = 'images/myphoto.jpg'` in the script, or replace the src attribute directly.
+          -->
+          <img id="mainImg" src="01.jpg" alt="Main photo">
+        </div>
+
+        <div class="lines">
+          <h3>YASHU HAPPY BIRTHDAY 🎂</h3>
+          <div id="wishText" class="wish" contenteditable>A wish for you on your birthday, whatever you ask may you receive, whatever you seek may you find, whatever you wish may it be fulfilled on your birthday and always. Happy birthday!</div>
+          <div class="from">— <span id="fromName" contenteditable>Pritam</span></div>
+        </div>
+      </div>
+
+      <aside class="card info">
+        <div style="color: var(--muted); font-size:14px; line-height:1.5;">
+          <div class="controls">
+            <button id="celebrateBtn" class="celebrateBtn">Celebrate</button>
+            <!-- <div style="font-size:12px;color:var(--muted);margin-top:8px">Paste your image URL into the script con</div> -->
+          </div>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+
+  <!-- confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    // simple save to localStorage so user edits aren't lost while working
+    ['title','subtitle','wishText','fromName'].forEach(id=>{
+      const el=$(id);
+      if(!el) return;
+      el.addEventListener('input',()=>localStorage.setItem(id,el.innerText));
+    });
+    // load saved text
+    ['title','subtitle','wishText','fromName'].forEach(id=>{ const v=localStorage.getItem(id); if(v && $(id)) $(id).innerText=v; });
+
+    // ---- IMAGE PLACEHOLDER: replace this value with your image URL -----
+    const IMAGE_SRC_HOLDER = 'REPLACE_WITH_YOUR_IMAGE_URL.jpg';
+    // To use it, uncomment the next line and set IMAGE_SRC_HOLDER to your image path.
+    // $('mainImg').src = IMAGE_SRC_HOLDER;
+    // --------------------------------------------------------------------
+
+    // No upload controls: set your image by editing IMAGE_SRC_HOLDER above.
+
+    // ----- Confetti setup -----
+    // Create a canvas inside the confetti holder and bind canvas-confetti to it.
+    (function setupConfetti(){
+      const holder = $('confettiHolder');
+      if(!holder || typeof confetti === 'undefined') return;
+      const canvas = document.createElement('canvas');
+      canvas.id = 'confettiCanvas';
+      holder.appendChild(canvas);
+      // create confetti instance bound to our canvas
+      const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+
+      // convenience function to fire confetti
+      function fireConfetti(){
+        myConfetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        myConfetti({ particleCount: 40, spread: 120, origin: { y: 0.4 } });
+      }
+
+      // Trigger confetti on load
+      window.addEventListener('load', ()=>{ setTimeout(fireConfetti, 600); });
+
+      // Hook up celebrate button
+      const btn = $('celebrateBtn'); if(btn) btn.addEventListener('click', fireConfetti);
+    })();
+
+  </script>
+</body>
+</html>
